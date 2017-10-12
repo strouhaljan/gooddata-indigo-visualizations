@@ -13,6 +13,7 @@ export function renderTable(props) {
 export default class TableTransformation extends Component {
     static propTypes = {
         afm: PropTypes.object,
+        aggregations: PropTypes.array,
         config: PropTypes.object,
         data: PropTypes.shape({
             headers: PropTypes.arrayOf(PropTypes.object),
@@ -29,6 +30,7 @@ export default class TableTransformation extends Component {
 
     static defaultProps = {
         afm: {},
+        aggregations: [],
         config: {},
         drillableItems: [],
         onFiredDrillEvent: () => {},
@@ -48,14 +50,15 @@ export default class TableTransformation extends Component {
             onSortChange,
             afm,
             drillableItems,
-            onFiredDrillEvent
+            onFiredDrillEvent,
+            aggregations
         } = this.props;
-
         const { sortBy, sortDir } = getSortInfo(config);
 
         const rows = parseMetricValues(headers, rawData);
 
         const tableProps = {
+            aggregations,
             afm,
             rows,
             drillableItems,

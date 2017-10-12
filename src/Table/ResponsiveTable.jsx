@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { bindAll, noop } from 'lodash';
-import { DEFAULT_HEADER_HEIGHT, DEFAULT_ROW_HEIGHT } from './TableVisualization';
+import { DEFAULT_HEADER_HEIGHT, DEFAULT_ROW_HEIGHT, DEFAULT_FOOTER_ROW_HEIGHT } from './TableVisualization';
 import Table from './Table';
 import TableControls from './TableControls';
 
@@ -11,6 +11,7 @@ const isTouchDevice = 'ontouchstart' in document.documentElement;
 
 export default class ResponsiveTable extends Component {
     static propTypes = {
+        aggregations: PropTypes.array,
         rowsPerPage: PropTypes.number.isRequired,
         rows: PropTypes.array.isRequired,
         page: PropTypes.number,
@@ -19,6 +20,7 @@ export default class ResponsiveTable extends Component {
     };
 
     static defaultProps = {
+        aggregations: [],
         onMore: noop,
         onLess: noop,
         page: 1
@@ -64,7 +66,10 @@ export default class ResponsiveTable extends Component {
     }
 
     getContainerMaxHeight() {
-        return (this.props.rows.length * DEFAULT_ROW_HEIGHT) +
+        const { rows, aggregations } = this.props;
+
+        return (rows.length * DEFAULT_ROW_HEIGHT) +
+            (aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT) +
             DEFAULT_HEADER_HEIGHT + HEIGHT_PADDING;
     }
 

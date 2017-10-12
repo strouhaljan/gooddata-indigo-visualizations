@@ -31,6 +31,15 @@ function generateData(columns, rows) {
     };
 }
 
+function generateAggregations(columns, aggregationsTypes) {
+    return aggregationsTypes.map((type, typeIndex) => {
+        return {
+            name: type,
+            values: range(columns).map((column, columnIndex) => typeIndex + columnIndex)
+        };
+    });
+}
+
 storiesOf('Table')
     .add('Fixed dimensions', () => (
         screenshotWrap(
@@ -94,6 +103,22 @@ storiesOf('Table')
                         onLess: action('Less clicked')
                     }}
                     data={generateData(20, 20)}
+                    height={400}
+                />
+            </IntlWrapper>
+        )
+    ))
+    .add('Aggregations', () => (
+        screenshotWrap(
+            <IntlWrapper>
+                <TableTransformation
+                    aggregations={generateAggregations(3, ['Sum', 'Avg', 'Rollup'])}
+                    tableRenderer={props => (<ResponsiveTable {...props} />)}
+                    config={{
+                        ...TestConfig.table,
+                        stickyHeader: 0
+                    }}
+                    data={TestData.stackedBar}
                     height={400}
                 />
             </IntlWrapper>

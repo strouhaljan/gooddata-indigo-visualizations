@@ -15,22 +15,20 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
     color: #333;
 
     &.has-hidden-rows {
+        &:not(.has-footer) .fixedDataTableLayout_rowsContainer::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 13px;
+            left: 0;
+            display: block;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 -1px 0 0 rgba(0, 0, 0, 0.03);
+        }
+
         .indigo-table-component-content,
         .indigo-table-background-filler {
             margin-bottom: -15px;
-        }
-
-        .fixedDataTableLayout_rowsContainer {
-            &::after {
-                content: '';
-                position: absolute;
-                right: 0;
-                bottom: 13px;
-                left: 0;
-                display: block;
-                border-top: 1px solid rgba(0, 0, 0, 0.08);
-                box-shadow: 0 -1px 0 0 rgba(0, 0, 0, 0.03);
-            }
         }
 
         .public_fixedDataTable_horizontalScrollbar {
@@ -54,8 +52,30 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
             clip: rect(0, auto, auto, 0);
         }
 
-        .sticking {
+        .table-header,
+        .table-footer {
+            box-shadow: none;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        .table-header.sticking {
             box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        .table-footer {
+            // stylelint-disable-next-line declaration-no-important
+            z-index: 2 !important; // Override inline style added by fixed-data-table-2
+            margin-top: -1px;
+            padding-bottom: 1px;
+            border-top: 1px solid $footer-border-top;
+
+            &.sticking {
+                box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.15);
+            }
+        }
+
+        .ScrollbarLayout_mainHorizontal {
+            border-left: 0;
         }
     }
 
@@ -120,7 +140,9 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
         box-shadow: none;
         white-space: nowrap;
         background: #fff;
+    }
 
+    .fixedDataTableLayout_header {
         .gd-table-header-ordering {
             color: $gd-color-state-blank;
             cursor: pointer;
@@ -201,6 +223,37 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
             .gd-table-header-title {
                 flex: 1 1 auto;
             }
+        }
+    }
+
+    .fixedDataTableLayout_footer .fixedDataTableCellLayout_main {
+        font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: $gd-color-dark;
+        background: none;
+
+        &:last-child {
+            .public_fixedDataTableCell_cellContent {
+                padding-right: 0;
+            }
+
+            .indigo-table-footer-cell {
+                padding-right: 20px;
+            }
+        }
+
+        .public_fixedDataTableCell_cellContent {
+            padding: 0;
+        }
+
+        .indigo-table-footer-cell {
+            box-sizing: border-box;
+            padding: 0 8px;
+            border-bottom: 1px solid $footer-border;
+            font-size: 12px;
+            line-height: 30px;
+            text-transform: none;
         }
     }
 }
