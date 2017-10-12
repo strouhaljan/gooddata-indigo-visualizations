@@ -14,7 +14,7 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
     line-height: 100%;
     color: #333;
 
-    &.has-hidden-rows {
+    &.has-hidden-rows:not(.has-footer) {
         .indigo-table-component-content,
         .indigo-table-background-filler {
             margin-bottom: -15px;
@@ -54,8 +54,18 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
             clip: rect(0, auto, auto, 0);
         }
 
-        .sticking {
+        .table-header,
+        .table-footer {
+            box-shadow: none;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        .table-header.sticking {
             box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15);
+        }
+    
+        .table-footer.sticking {
+            box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.15);
         }
     }
 
@@ -120,7 +130,9 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
         box-shadow: none;
         white-space: nowrap;
         background: #fff;
+    }
 
+    .fixedDataTableLayout_header {
         .gd-table-header-ordering {
             color: $gd-color-state-blank;
             cursor: pointer;
@@ -200,6 +212,44 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
         .gd-table-header-ordering {
             .gd-table-header-title {
                 flex: 1 1 auto;
+            }
+        }
+    }
+
+    .fixedDataTableLayout_footer {
+        .fixedDataTableCellLayout_main {
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: $gd-color-dark;
+            background: none;
+
+            .public_fixedDataTableCell_cellContent {
+                padding: 0;
+    
+                &:last-child {
+                    padding-right: 0;
+                }
+            }
+
+            .indigo-table-aggregations-cell {
+                padding: 8px;
+                border-bottom: 1px solid $border-color;
+
+                &:first-child {
+                    border-top: 1px solid $border-color;
+                }
+            }
+
+            &:first-child .indigo-table-aggregations-cell {
+                border-left: 1px solid $border-color;
+                border-radius: 4px 0 0 4px;
+            }
+
+            &:last-child .indigo-table-aggregations-cell {
+                border-right: 1px solid $border-color;
+                padding-right: 20px;
+                border-radius: 0 4px 4px 0;
             }
         }
     }
