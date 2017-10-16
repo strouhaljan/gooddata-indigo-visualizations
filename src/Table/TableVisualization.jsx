@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { Table, Column, Cell } from 'fixed-data-table-2';
 import classNames from 'classnames';
-import { noop, partial, uniqueId, pick, assign } from 'lodash';
+import { noop, partial, uniqueId, pick, assign, isEqual } from 'lodash';
 import { Observable } from 'rxjs/Rx';
 import { numberFormat } from '@gooddata/numberjs';
 
@@ -168,7 +168,7 @@ export default class TableVisualization extends Component {
             // this.checkTableDimensions();
         }
 
-        if (prevProps.aggregations !== aggregations) {
+        if (isEqual(prevProps.aggregations, aggregations)) {
             const tableRows = this.table.querySelectorAll('.fixedDataTableRowLayout_rowWrapper');
 
             this.footer.classList.remove('table-footer');
