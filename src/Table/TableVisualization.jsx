@@ -374,7 +374,7 @@ export default class TableVisualization extends Component {
 
     scroll(element, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop) {
         if (isDefaultTop) {
-            this.setHeading(element, null, defaultTop);
+            this.setHeading(element, 'absolute', defaultTop);
             return;
         }
 
@@ -383,9 +383,7 @@ export default class TableVisualization extends Component {
             return;
         }
 
-        if (this.footer.style.position !== 'fixed') {
-            this.setHeading(element, 'fixed', fixedTop);
-        }
+        this.setHeading(element, 'fixed', fixedTop);
     }
 
     scrolled() {
