@@ -31,7 +31,6 @@ export const DEFAULT_ROW_HEIGHT = 30;
 export const DEFAULT_HEADER_HEIGHT = 26;
 export const DEFAULT_FOOTER_ROW_HEIGHT = 30;
 
-const DEBOUNCE_SCROLL_STOP = 500;
 const TOOLTIP_DISPLAY_DELAY = 1000;
 
 export const SCROLL_DEBOUNCE_MILISECONDS = 0;
@@ -121,11 +120,6 @@ export default class TableVisualization extends Component {
         this.setTableWrapRef = this.setTableWrapRef.bind(this);
         this.closeBubble = this.closeBubble.bind(this);
         this.scrolled = this.scrolled.bind(this);
-
-        this.stopped = debounce(() => {
-            this.scrollHeader(true);
-            this.scrollFooter(true);
-        }, DEBOUNCE_SCROLL_STOP);
     }
 
     componentDidMount() {
@@ -182,8 +176,6 @@ export default class TableVisualization extends Component {
             this.footer.classList.add('table-footer');
         }
 
-        console.log('XX componentDidUpdate() props', this.props);
-
         this.props.afterRender();
     }
 
@@ -203,12 +195,11 @@ export default class TableVisualization extends Component {
         this.subscribers = subscribeEvents(this.scrolled, scrollEvents);
     }
 
-    setHeading(element, position = '', x = 0, y = 0) {
+    setHeading(element, position = '', y = 0) {
         const { style, classList } = element;
 
         classList[position ? 'add' : 'remove']('sticking');
         style.position = position;
-        style.left = `${Math.round(x)}px`;
         style.top = `${Math.round(y)}px`;
     }
 
@@ -241,6 +232,17 @@ export default class TableVisualization extends Component {
         };
     }
 
+    getComponentClasses() {
+        const { hasHiddenRows, aggregations } = this.props;
+
+        return classNames(
+            'indigo-table-component',
+            {
+                'has-hidden-rows': hasHiddenRows,
+                'has-footer': aggregations.length > 0
+            });
+    }
+
     unsetListeners() {
         if (this.subscribers && this.subscribers.length > 0) {
             this.subscribers.forEach((subscriber) => {
@@ -265,41 +267,89 @@ export default class TableVisualization extends Component {
         }
     }
 
-    scrollHeader(stopped = false) {
+    // scrollHeader() {
+    //     const { stickyHeader, sortInTooltip, hasHiddenRows, aggregations } = this.props;
+    //     const boundingRect = this.tableInnerContainer.getBoundingClientRect();
+
+    //     if (sortInTooltip && this.state.sortBubble.visible) {
+    //         this.closeBubble();
+    //     }
+
+    //     if (
+    //         boundingRect.top >= stickyHeader ||
+    //         boundingRect.top < stickyHeader - boundingRect.height
+    //     ) {
+    //         this.setHeading(this.header);
+    //         return;
+    //     }
+
+    //     const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
+    //     const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + (aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT) - hiddenRowsOffset;
+
+    //     if (
+    //         boundingRect.bottom >= stickyHeader &&
+    //         boundingRect.bottom < stickyHeader + headerOffset
+    //     ) {
+    //         this.setHeading(this.header, 'absolute', boundingRect.height - headerOffset);
+    //         return;
+    //     }
+
+    //     if (this.footer.style.position !== 'fixed') {
+    //         this.setHeading(this.header, 'fixed', stickyHeader);
+    //     }
+    // }
+
+    scrollHeader() {
         const { stickyHeader, sortInTooltip, hasHiddenRows, aggregations } = this.props;
         const boundingRect = this.tableInnerContainer.getBoundingClientRect();
 
-        if (!stopped && sortInTooltip && this.state.sortBubble.visible) {
+        if (sortInTooltip && this.state.sortBubble.visible) {
             this.closeBubble();
-        }
-
-        if (
-            boundingRect.top >= stickyHeader ||
-            boundingRect.top < stickyHeader - boundingRect.height
-        ) {
-            this.setHeading(this.header);
-            return;
         }
 
         const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
         const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + (aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT) - hiddenRowsOffset;
 
-        if (
-            boundingRect.bottom >= stickyHeader &&
-            boundingRect.bottom < stickyHeader + headerOffset
-        ) {
-            this.setHeading(this.header, 'absolute', 0, boundingRect.height - headerOffset);
-            return;
-        }
+        const isDefaultTop = boundingRect.top >= stickyHeader || boundingRect.top < stickyHeader - boundingRect.height;
+        const isBorderTop = boundingRect.bottom >= stickyHeader && boundingRect.bottom < stickyHeader + headerOffset;
+        const borderTop = boundingRect.height - headerOffset;
+        const fixedTop = stickyHeader;
 
-        if (stopped) {
-            this.setHeading(this.header, 'absolute', 0, stickyHeader - boundingRect.top);
-        } else {
-            this.setHeading(this.header, 'fixed', boundingRect.left, stickyHeader);
-        }
+        this.scroll(this.header, isDefaultTop, null, isBorderTop, borderTop, fixedTop);
     }
 
-    scrollFooter(stopped = false) {
+    // scrollFooter() {
+    //     const { hasHiddenRows, aggregations } = this.props;
+
+    //     if (aggregations.length === 0) {
+    //         return;
+    //     }
+
+    //     const boundingRect = this.tableInnerContainer.getBoundingClientRect();
+    //     const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
+
+    //     if (boundingRect.bottom + hiddenRowsOffset <= window.innerHeight) {
+    //         this.setHeading(this.footer, null, hiddenRowsOffset);
+    //         return;
+    //     }
+
+    //     const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
+
+    //     const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
+
+    //     const footerHeightTranslate = boundingRect.height - footerHeight;
+
+    //     if ((boundingRect.bottom - footerHeightTranslate + headerOffset) >= window.innerHeight) {
+    //         this.setHeading(this.footer, 'absolute', headerOffset - footerHeightTranslate);
+    //         return;
+    //     }
+
+    //     if (this.footer.style.position !== 'fixed') {
+    //         this.setHeading(this.footer, 'fixed', window.innerHeight - footerHeightTranslate - footerHeight);
+    //     }
+    // }
+
+    scrollFooter() {
         const { hasHiddenRows, aggregations } = this.props;
 
         if (aggregations.length === 0) {
@@ -308,40 +358,39 @@ export default class TableVisualization extends Component {
 
         const boundingRect = this.tableInnerContainer.getBoundingClientRect();
         const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
-
-        if (boundingRect.bottom + hiddenRowsOffset <= window.innerHeight) {
-            this.setHeading(this.footer, null, null, hiddenRowsOffset);
-            return;
-        }
-
         const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
-
         const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
-
         const footerHeightTranslate = boundingRect.height - footerHeight;
 
-        if ((boundingRect.bottom - footerHeightTranslate + headerOffset) >= window.innerHeight) {
-            this.setHeading(this.footer, 'absolute', 0, headerOffset - footerHeightTranslate);
+
+        const isDefaultTop = boundingRect.bottom + hiddenRowsOffset <= window.innerHeight;
+        const defaultTop = hiddenRowsOffset;
+        const isBorderTop = (boundingRect.bottom - footerHeightTranslate + headerOffset) >= window.innerHeight;
+        const borderTop = headerOffset - footerHeightTranslate;
+        const fixedTop = window.innerHeight - footerHeightTranslate - footerHeight;
+
+        this.scroll(this.footer, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop);
+    }
+
+    scroll(element, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop) {
+        if (isDefaultTop) {
+            this.setHeading(element, null, defaultTop);
             return;
         }
 
-        if (stopped) {
-            this.setHeading(this.footer, 'absolute', 0, window.innerHeight - boundingRect.bottom);
-        } else {
-            this.setHeading(this.footer, 'fixed', boundingRect.left, window.innerHeight - footerHeightTranslate - footerHeight);
+        if (isBorderTop) {
+            this.setHeading(element, 'absolute', borderTop);
+            return;
+        }
+
+        if (this.footer.style.position !== 'fixed') {
+            this.setHeading(element, 'fixed', fixedTop);
         }
     }
-
-    // onScroll(stopped = false) {
-
-    // }
 
     scrolled() {
         this.scrollHeader();
         this.scrollFooter();
-
-        // required for Edge/IE to make sticky header clickable
-        this.stopped();
     }
 
     closeBubble() {
@@ -553,34 +602,12 @@ export default class TableVisualization extends Component {
         });
     }
 
-    getComponentClasses() {
-        const { hasHiddenRows, aggregations } = this.props;
-
-        return classNames(
-            'indigo-table-component',
-            {
-                'has-hidden-rows': hasHiddenRows,
-                'has-footer': aggregations.length > 0
-            });
-    }
-
-    getContentClasses() {
-        const { isSticky } = this.props;
-
-        return classNames(
-            'indigo-table-component-content',
-            {
-                'has-sticky-header': isSticky
-            });
-    }
-
     render() {
         const {
             headers,
             containerWidth,
             containerHeight,
             containerMaxHeight,
-            stickyHeader,
             afm,
             aggregations
         } = this.props;
@@ -588,14 +615,18 @@ export default class TableVisualization extends Component {
         const enrichedHeaders = enrichTableDataHeaders(headers, afm);
 
         const columnWidth = Math.max(containerWidth / enrichedHeaders.length, MIN_COLUMN_WIDTH);
-        const isSticky = this.isSticky(stickyHeader);
 
         const footerHeight = DEFAULT_FOOTER_ROW_HEIGHT * aggregations.length;
-        const height = containerMaxHeight ? undefined : containerHeight + footerHeight;
+        const height = containerMaxHeight ? undefined : containerHeight;
+        const maxHeight = containerMaxHeight ? (containerMaxHeight + footerHeight) : undefined;
+
+        console.log('XXX render()', containerHeight, containerMaxHeight, footerHeight);
+        console.log('XXX height, maxHeight', height, maxHeight);
+        console.log('XXX state', this.state.height);
 
         return (
             <div className={this.getComponentClasses()}>
-                <div className={this.getContentClasses()} ref={this.setTableWrapRef}>
+                <div className={'indigo-table-component-content'} ref={this.setTableWrapRef}>
                     <Table
                         ref={this.setTableRef}
                         touchScrollEnabled
@@ -604,19 +635,13 @@ export default class TableVisualization extends Component {
                         rowHeight={DEFAULT_ROW_HEIGHT}
                         rowsCount={this.props.rows.length}
                         width={containerWidth}
-                        maxHeight={containerMaxHeight + footerHeight}
+                        maxHeight={maxHeight}
                         height={height}
                         onScrollStart={this.closeBubble}
                     >
                         {this.renderColumns(enrichedHeaders, columnWidth)}
                     </Table>
                 </div>
-                {isSticky ? (
-                    <div
-                        className="indigo-table-background-filler"
-                        style={{ ...pick(this.state, 'width', 'height') }}
-                    />
-                ) : false}
             </div>
         );
     }

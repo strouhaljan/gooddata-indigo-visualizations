@@ -228,16 +228,18 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
             color: $gd-color-dark;
             background: none;
 
+            &:last-child {
+                .public_fixedDataTableCell_cellContent {
+                    padding-right: 0;
+                }
+
+                .indigo-table-aggregations-cell {
+                    padding-right: 20px;
+                }
+            }
+
             .public_fixedDataTableCell_cellContent {
                 padding: 0;
-    
-                &:last-child {
-                    padding-right: 0;
-
-                    .indigo-table-aggregations-cell {
-                        padding-right: 20px;
-                    }
-                }
             }
 
             .indigo-table-aggregations-cell {
