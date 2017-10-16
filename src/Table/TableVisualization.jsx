@@ -281,7 +281,8 @@ export default class TableVisualization extends Component {
             return;
         }
 
-        const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + (aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT) - (hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0);
+        const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
+        const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + (aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT) - hiddenRowsOffset;
 
         if (
             boundingRect.bottom >= stickyHeader &&
