@@ -553,6 +553,27 @@ export default class TableVisualization extends Component {
         });
     }
 
+    getComponentClasses() {
+        const { hasHiddenRows, aggregations } = this.props;
+
+        return classNames(
+            'indigo-table-component',
+            {
+                'has-hidden-rows': hasHiddenRows,
+                'has-footer': aggregations.length > 0
+            });
+    }
+
+    getContentClasses() {
+        const { isSticky } = this.props;
+
+        return classNames(
+            'indigo-table-component-content',
+            {
+                'has-sticky-header': isSticky
+            });
+    }
+
     render() {
         const {
             headers,
@@ -560,7 +581,6 @@ export default class TableVisualization extends Component {
             containerHeight,
             containerMaxHeight,
             stickyHeader,
-            hasHiddenRows,
             afm,
             aggregations
         } = this.props;
@@ -573,14 +593,9 @@ export default class TableVisualization extends Component {
         const footerHeight = DEFAULT_FOOTER_ROW_HEIGHT * aggregations.length;
         const height = containerMaxHeight ? undefined : containerHeight + footerHeight;
 
-        const componentClasses =
-            classNames('indigo-table-component', { 'has-hidden-rows': hasHiddenRows, 'has-footer': aggregations.length > 0 });
-        const componentContentClasses =
-            classNames('indigo-table-component-content', { 'has-sticky-header': isSticky });
-
         return (
-            <div className={componentClasses}>
-                <div className={componentContentClasses} ref={this.setTableWrapRef}>
+            <div className={this.getComponentClasses()}>
+                <div className={this.getContentClasses()} ref={this.setTableWrapRef}>
                     <Table
                         ref={this.setTableRef}
                         touchScrollEnabled
