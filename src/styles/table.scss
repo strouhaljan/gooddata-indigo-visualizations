@@ -64,8 +64,12 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
             box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15);
         }
     
-        .table-footer.sticking {
-            box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.15);
+        .table-footer {
+            border-top: 1px solid $aggregations-border-top;
+
+            &.sticking {
+                box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.15);
+            }
         }
     }
 
@@ -229,27 +233,18 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
     
                 &:last-child {
                     padding-right: 0;
+
+                    .indigo-table-aggregations-cell {
+                        padding-right: 20px;
+                    }
                 }
             }
 
             .indigo-table-aggregations-cell {
-                padding: 8px;
-                border-bottom: 1px solid $border-color;
-
-                &:first-child {
-                    border-top: 1px solid $border-color;
-                }
-            }
-
-            &:first-child .indigo-table-aggregations-cell {
-                border-left: 1px solid $border-color;
-                border-radius: 4px 0 0 4px;
-            }
-
-            &:last-child .indigo-table-aggregations-cell {
-                border-right: 1px solid $border-color;
-                padding-right: 20px;
-                border-radius: 0 4px 4px 0;
+                border-bottom: 1px solid $aggregations-border;
+                box-sizing: border-box;
+                line-height: 30px;
+                padding: 0 8px;
             }
         }
     }

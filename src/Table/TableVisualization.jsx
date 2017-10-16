@@ -129,18 +129,22 @@ export default class TableVisualization extends Component {
     }
 
     componentDidMount() {
+        const { stickyHeader, aggregations } = this.props;
+
         this.table = ReactDOM.findDOMNode(this.tableRef); // eslint-disable-line react/no-find-dom-node
         this.tableInnerContainer = this.table.querySelector('.fixedDataTableLayout_rowsContainer');
-        
+
         const tableRows = this.table.querySelectorAll('.fixedDataTableRowLayout_rowWrapper');
-        
+
         this.header = tableRows[0];
         this.header.classList.add('table-header');
-        
-        this.footer = tableRows[tableRows.length - 1];
-        this.footer.classList.add('table-footer');
 
-        if (this.isSticky(this.props.stickyHeader)) {
+        if (aggregations.length > 0) {
+            this.footer = tableRows[tableRows.length - 1];
+            this.footer.classList.add('table-footer');
+        }
+
+        if (this.isSticky(stickyHeader)) {
             this.setListeners();
             this.scrolled();
             this.checkTableDimensions();
@@ -177,6 +181,8 @@ export default class TableVisualization extends Component {
             this.footer = tableRows[tableRows.length - 1];
             this.footer.classList.add('table-footer');
         }
+
+        console.log('XX componentDidUpdate() props', this.props);
 
         this.props.afterRender();
     }
@@ -236,10 +242,12 @@ export default class TableVisualization extends Component {
     }
 
     unsetListeners() {
-        this.subscribers.forEach((subscriber) => {
-            subscriber.unsubscribe();
-        });
-        this.subscribers = null;
+        if (this.subscribers && this.subscribers.length > 0) {
+            this.subscribers.forEach((subscriber) => {
+                subscriber.unsubscribe();
+            });
+            this.subscribers = null;
+        }
     }
 
     isSticky(stickyHeader) {
@@ -273,9 +281,10 @@ export default class TableVisualization extends Component {
             return;
         }
 
-        const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + (aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT);
+        const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + (aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT) - (hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0);
 
-        if (boundingRect.bottom >= stickyHeader &&
+        if (
+            boundingRect.bottom >= stickyHeader &&
             boundingRect.bottom < stickyHeader + headerOffset
         ) {
             this.setHeading(this.header, 'absolute', 0, boundingRect.height - headerOffset);
@@ -291,15 +300,16 @@ export default class TableVisualization extends Component {
 
     scrollFooter(stopped = false) {
         const { hasHiddenRows, aggregations } = this.props;
-        
+
         if (aggregations.length === 0) {
             return;
         }
 
         const boundingRect = this.tableInnerContainer.getBoundingClientRect();
+        const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
 
-        if (boundingRect.bottom <= window.innerHeight) {
-            this.setHeading(this.footer);
+        if (boundingRect.bottom + hiddenRowsOffset <= window.innerHeight) {
+            this.setHeading(this.footer, null, null, hiddenRowsOffset);
             return;
         }
 
@@ -321,6 +331,9 @@ export default class TableVisualization extends Component {
         }
     }
 
+    // onScroll(stopped = false) {
+
+    // }
 
     scrolled() {
         this.scrollHeader();
@@ -503,7 +516,6 @@ export default class TableVisualization extends Component {
         const style = {
             height: DEFAULT_FOOTER_ROW_HEIGHT
         };
-
         const isFirstColumn = (index === 0);
 
         return (
@@ -557,8 +569,8 @@ export default class TableVisualization extends Component {
         const columnWidth = Math.max(containerWidth / enrichedHeaders.length, MIN_COLUMN_WIDTH);
         const isSticky = this.isSticky(stickyHeader);
 
-        const height = containerMaxHeight ? undefined : containerHeight;
         const footerHeight = DEFAULT_FOOTER_ROW_HEIGHT * aggregations.length;
+        const height = containerMaxHeight ? undefined : containerHeight + footerHeight;
 
         const componentClasses =
             classNames('indigo-table-component', { 'has-hidden-rows': hasHiddenRows, 'has-footer': aggregations.length > 0 });
@@ -576,7 +588,7 @@ export default class TableVisualization extends Component {
                         rowHeight={DEFAULT_ROW_HEIGHT}
                         rowsCount={this.props.rows.length}
                         width={containerWidth}
-                        maxHeight={containerMaxHeight}
+                        maxHeight={containerMaxHeight + footerHeight}
                         height={height}
                         onScrollStart={this.closeBubble}
                     >
