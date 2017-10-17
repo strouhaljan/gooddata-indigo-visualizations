@@ -31,13 +31,13 @@ export default class TableTransformation extends Component {
         afm: {},
         aggregations: [
             {
-                name: 'sum',
+                name: 'Sum',
                 values: [null, null, 125, null, 256, 815, 99, 9876983]
             }, {
-                name: 'avg',
+                name: 'Avg',
                 values: [null, null, 45.98, 12.32, null, 12, 113, 231]
             }, {
-                name: 'rollup',
+                name: 'Rollup',
                 values: [null, 12.99, null, 1.28, 98.1, 1.008, 2, 2.098765]
             }
         ],

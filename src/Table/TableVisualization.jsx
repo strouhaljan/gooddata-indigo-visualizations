@@ -116,7 +116,7 @@ export default class TableVisualization extends Component {
         this.header = tableRows[0];
         this.header.classList.add('table-header');
 
-        if (aggregations.length > 0) {
+        if (this.hasFooter()) {
             this.footer = tableRows[tableRows.length - 1];
             this.footer.classList.add('table-footer');
         }
@@ -150,7 +150,7 @@ export default class TableVisualization extends Component {
 
             this.footer.classList.remove('table-footer');
 
-            if (aggregations.length > 0) {
+            if (this.hasFooter()) {
                 this.footer = tableRows[tableRows.length - 1];
                 this.footer.classList.add('table-footer');
             }
@@ -219,7 +219,7 @@ export default class TableVisualization extends Component {
             'indigo-table-component',
             {
                 'has-hidden-rows': hasHiddenRows,
-                'has-footer': aggregations.length > 0
+                'has-footer': this.hasFooter()
             });
     }
 
@@ -234,6 +234,11 @@ export default class TableVisualization extends Component {
 
     isSticky(stickyHeader) {
         return stickyHeader >= 0;
+    }
+
+    hasFooter() {
+        const { aggregations } = this.props;
+        return aggregations.length > 0;
     }
 
     scrollHeader() {
@@ -259,7 +264,7 @@ export default class TableVisualization extends Component {
     scrollFooter() {
         const { hasHiddenRows, aggregations } = this.props;
 
-        if (aggregations.length === 0) {
+        if (!this.hasFooter()) {
             return;
         }
 

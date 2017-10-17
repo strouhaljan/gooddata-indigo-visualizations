@@ -112,7 +112,7 @@ storiesOf('Table')
         screenshotWrap(
             <IntlWrapper>
                 <TableTransformation
-                    aggregations={generateAggregations(3, ['sum', 'avg', 'rollup'])}
+                    aggregations={generateAggregations(3, ['Sum', 'Avg', 'Rollup'])}
                     tableRenderer={props => (<ResponsiveTable {...props} />)}
                     config={{
                         ...TestConfig.table,
