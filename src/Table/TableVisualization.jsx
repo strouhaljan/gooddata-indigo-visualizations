@@ -160,7 +160,7 @@ export default class TableVisualization extends Component {
     componentDidUpdate(prevProps) {
         const { stickyHeader, aggregations } = this.props;
 
-        if (isEqual(prevProps.aggregations, aggregations)) {
+        if (!isEqual(prevProps.aggregations, aggregations)) {
             const tableRows = this.table.querySelectorAll('.fixedDataTableRowLayout_rowWrapper');
 
             this.footer.classList.remove('table-footer');
