@@ -113,7 +113,7 @@ export default class TableVisualization extends Component {
     }
 
     componentDidMount() {
-        const { stickyHeader, aggregations } = this.props;
+        const { stickyHeader } = this.props;
 
         this.table = ReactDOM.findDOMNode(this.tableRef); // eslint-disable-line react/no-find-dom-node
         this.tableInnerContainer = this.table.querySelector('.fixedDataTableLayout_rowsContainer');
@@ -226,7 +226,7 @@ export default class TableVisualization extends Component {
     }
 
     getComponentClasses() {
-        const { hasHiddenRows, aggregations } = this.props;
+        const { hasHiddenRows } = this.props;
 
         return classNames(
             'indigo-table-component',
