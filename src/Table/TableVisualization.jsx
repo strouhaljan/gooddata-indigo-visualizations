@@ -109,9 +109,7 @@ export default class TableVisualization extends Component {
             hintSortBy: null,
             sortBubble: {
                 visible: false
-            },
-            width: 0,
-            height: 0
+            }
         };
 
         this.renderTooltipHeader = this.renderTooltipHeader.bind(this);
@@ -141,7 +139,6 @@ export default class TableVisualization extends Component {
         if (this.isSticky(stickyHeader)) {
             this.setListeners();
             this.scrolled();
-            // this.checkTableDimensions();
         }
     }
 
@@ -163,11 +160,6 @@ export default class TableVisualization extends Component {
     componentDidUpdate(prevProps) {
         const { stickyHeader, aggregations } = this.props;
 
-        if (this.isSticky(stickyHeader)) {
-            this.scrolled();
-            // this.checkTableDimensions();
-        }
-
         if (isEqual(prevProps.aggregations, aggregations)) {
             const tableRows = this.table.querySelectorAll('.fixedDataTableRowLayout_rowWrapper');
 
@@ -177,6 +169,10 @@ export default class TableVisualization extends Component {
                 this.footer = tableRows[tableRows.length - 1];
                 this.footer.classList.add('table-footer');
             }
+        }
+
+        if (this.isSticky(stickyHeader)) {
+            this.scrolled();
         }
 
         this.props.afterRender();
@@ -227,10 +223,6 @@ export default class TableVisualization extends Component {
 
     getMouseOverFunc(index) {
         return () => {
-            // workaround glitch with fixed-data-table-2,
-            // where header styles are overwritten first time user mouses over it
-            this.scrolled();
-
             this.setState({ hintSortBy: index });
         };
     }
@@ -259,17 +251,6 @@ export default class TableVisualization extends Component {
         return stickyHeader >= 0;
     }
 
-    // checkTableDimensions() {
-    //     if (this.table) {
-    //         const { width, height } = this.state;
-    //         const rect = this.table.getBoundingClientRect();
-
-    //         if (width !== rect.width || height !== rect.height) {
-    //             this.setState(pick(rect, 'width', 'height'));
-    //         }
-    //     }
-    // }
-
     scrollHeader() {
         const { stickyHeader, sortInTooltip, hasHiddenRows, aggregations } = this.props;
         const boundingRect = this.tableInnerContainer.getBoundingClientRect();
@@ -278,8 +259,9 @@ export default class TableVisualization extends Component {
             this.closeBubble();
         }
 
+        const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
         const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
-        const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + (aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT) - hiddenRowsOffset;
+        const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + footerHeight - hiddenRowsOffset;
 
         const isDefaultTop = boundingRect.top >= stickyHeader || boundingRect.top < stickyHeader - boundingRect.height;
         const isBorderTop = boundingRect.bottom >= stickyHeader && boundingRect.bottom < stickyHeader + headerOffset;
@@ -297,8 +279,9 @@ export default class TableVisualization extends Component {
         }
 
         const boundingRect = this.tableInnerContainer.getBoundingClientRect();
-        const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
+
         const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
+        const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
         const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
         const footerHeightTranslate = boundingRect.height - footerHeight;
 
@@ -362,10 +345,6 @@ export default class TableVisualization extends Component {
         };
 
         const showSortBubble = () => {
-            // workaround glitch with fixed-data-table-2
-            // where header styles are overwritten first time user clicks on it
-            this.scrolled();
-
             this.setState({
                 sortBubble: {
                     visible: true,
