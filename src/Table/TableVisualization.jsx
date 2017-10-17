@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { Table, Column, Cell } from 'fixed-data-table-2';
 import classNames from 'classnames';
-import { noop, partial, uniqueId, assign, isEqual } from 'lodash';
+import { noop, partial, pick, uniqueId, assign, isEqual, debounce } from 'lodash';
 import { numberFormat } from '@gooddata/numberjs';
 
 import Bubble from '@gooddata/goodstrap/lib/Bubble/Bubble';
@@ -32,6 +32,8 @@ export const DEFAULT_HEADER_HEIGHT = 26;
 export const DEFAULT_FOOTER_ROW_HEIGHT = 30;
 
 const TOOLTIP_DISPLAY_DELAY = 1000;
+
+const DEBOUNCE_SCROLL_STOP = 500;
 
 export const SCROLL_DEBOUNCE_MILISECONDS = 0;
 export const RESIZE_DEBOUNCE_MILISECONDS = 60;
@@ -94,7 +96,9 @@ export default class TableVisualization extends Component {
             hintSortBy: null,
             sortBubble: {
                 visible: false
-            }
+            },
+            width: 0,
+            height: 0
         };
 
         this.renderTooltipHeader = this.renderTooltipHeader.bind(this);
@@ -102,7 +106,10 @@ export default class TableVisualization extends Component {
         this.setTableRef = this.setTableRef.bind(this);
         this.setTableWrapRef = this.setTableWrapRef.bind(this);
         this.closeBubble = this.closeBubble.bind(this);
+        this.scroll = this.scroll.bind(this);
         this.scrolled = this.scrolled.bind(this);
+
+        this.stopped = debounce(() => this.scroll(true), DEBOUNCE_SCROLL_STOP);
     }
 
     componentDidMount() {
@@ -124,6 +131,7 @@ export default class TableVisualization extends Component {
         if (this.isSticky(stickyHeader)) {
             this.setListeners();
             this.scrolled();
+            this.checkTableDimensions();
         }
     }
 
@@ -157,7 +165,8 @@ export default class TableVisualization extends Component {
         }
 
         if (this.isSticky(stickyHeader)) {
-            this.scrolled();
+            this.scroll(true);
+            this.checkTableDimensions();
         }
 
         this.props.afterRender();
@@ -208,6 +217,10 @@ export default class TableVisualization extends Component {
 
     getMouseOverFunc(index) {
         return () => {
+            // workaround glitch with fixed-data-table-2,
+            // where header styles are overwritten first time user mouses over it
+            this.scrolled();
+
             this.setState({ hintSortBy: index });
         };
     }
@@ -222,6 +235,17 @@ export default class TableVisualization extends Component {
                 'has-footer': this.hasFooter()
             });
     }
+
+    getContentClasses() {
+        const { stickyHeader } = this.props;
+
+        return classNames(
+            'indigo-table-component-content',
+            {
+                'has-sticky-header': this.isSticky(stickyHeader)
+            });
+    }
+
 
     unsetListeners() {
         if (this.subscribers && this.subscribers.length > 0) {
@@ -241,11 +265,22 @@ export default class TableVisualization extends Component {
         return aggregations.length > 0;
     }
 
-    scrollHeader() {
+    checkTableDimensions() {
+        if (this.table) {
+            const { width, height } = this.state;
+            const rect = this.table.getBoundingClientRect();
+
+            if (width !== rect.width || height !== rect.height) {
+                this.setState(pick(rect, 'width', 'height'));
+            }
+        }
+    }
+
+    scrollHeader(stopped = false) {
         const { stickyHeader, sortInTooltip, hasHiddenRows, aggregations } = this.props;
         const boundingRect = this.tableInnerContainer.getBoundingClientRect();
 
-        if (sortInTooltip && this.state.sortBubble.visible) {
+        if (!stopped && sortInTooltip && this.state.sortBubble.visible) {
             this.closeBubble();
         }
 
@@ -257,11 +292,12 @@ export default class TableVisualization extends Component {
         const isBorderTop = boundingRect.bottom >= stickyHeader && boundingRect.bottom < stickyHeader + headerOffset;
         const borderTop = boundingRect.height - headerOffset;
         const fixedTop = stickyHeader;
+        const absoluteTop = stickyHeader - boundingRect.top;
 
-        this.scroll(this.header, isDefaultTop, null, isBorderTop, borderTop, fixedTop);
+        this.updatePosition(this.header, isDefaultTop, null, isBorderTop, borderTop, fixedTop, absoluteTop, stopped);
     }
 
-    scrollFooter() {
+    scrollFooter(stopped = false) {
         const { hasHiddenRows, aggregations } = this.props;
 
         if (!this.hasFooter()) {
@@ -280,11 +316,12 @@ export default class TableVisualization extends Component {
         const isBorderTop = (boundingRect.bottom - footerHeightTranslate + headerOffset) >= window.innerHeight;
         const borderTop = headerOffset - footerHeightTranslate;
         const fixedTop = window.innerHeight - footerHeightTranslate - footerHeight;
+        const absoluteTop = window.innerHeight - boundingRect.bottom;
 
-        this.scroll(this.footer, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop);
+        this.updatePosition(this.footer, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop, absoluteTop, stopped);
     }
 
-    scroll(element, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop) {
+    updatePosition(element, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop, absoluteTop, stopped) {
         if (isDefaultTop) {
             this.setPosition(element, 'absolute', defaultTop);
             return;
@@ -295,12 +332,21 @@ export default class TableVisualization extends Component {
             return;
         }
 
-        this.setPosition(element, 'fixed', fixedTop, true);
+        if (stopped) {
+            this.setPosition(element, 'absolute', absoluteTop, true);
+        } else {
+            this.setPosition(element, 'fixed', fixedTop, true);
+        }
+    }
+
+    scroll(stopped = false) {
+        this.scrollHeader(stopped);
+        this.scrollFooter(stopped);
     }
 
     scrolled() {
-        this.scrollHeader();
-        this.scrollFooter();
+        this.scroll();
+        this.stopped();
     }
 
     closeBubble() {
@@ -335,6 +381,10 @@ export default class TableVisualization extends Component {
         };
 
         const showSortBubble = () => {
+            // workaround glitch with fixed-data-table-2
+            // where header styles are overwritten first time user clicks on it
+            this.scroll();
+
             this.setState({
                 sortBubble: {
                     visible: true,
@@ -515,7 +565,8 @@ export default class TableVisualization extends Component {
             containerHeight,
             containerMaxHeight,
             afm,
-            aggregations
+            aggregations,
+            stickyHeader
         } = this.props;
 
         const enrichedHeaders = enrichTableDataHeaders(headers, afm);
@@ -528,7 +579,7 @@ export default class TableVisualization extends Component {
 
         return (
             <div className={this.getComponentClasses()}>
-                <div className={'indigo-table-component-content'} ref={this.setTableWrapRef}>
+                <div className={this.getContentClasses()} ref={this.setTableWrapRef}>
                     <Table
                         ref={this.setTableRef}
                         touchScrollEnabled
@@ -544,6 +595,12 @@ export default class TableVisualization extends Component {
                         {this.renderColumns(enrichedHeaders, columnWidth)}
                     </Table>
                 </div>
+                {this.isSticky(stickyHeader) ? (
+                    <div
+                        className={'indigo-table-background-filler'}
+                        style={{ ...pick(this.state, 'width', 'height') }}
+                    />
+                ) : false}
             </div>
         );
     }
