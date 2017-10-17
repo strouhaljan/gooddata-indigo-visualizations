@@ -294,7 +294,9 @@ export default class TableVisualization extends Component {
         const fixedTop = stickyHeader;
         const absoluteTop = stickyHeader - boundingRect.top;
 
-        this.updatePosition(this.header, isDefaultTop, null, isBorderTop, borderTop, fixedTop, absoluteTop, stopped);
+        const positionTypes = { isDefaultTop, isBorderTop };
+        const positions = { defaultTop: null, borderTop, fixedTop, absoluteTop };
+        this.updatePosition(this.header, positionTypes, positions, stopped);
     }
 
     scrollFooter(stopped = false) {
@@ -318,10 +320,15 @@ export default class TableVisualization extends Component {
         const fixedTop = window.innerHeight - footerHeightTranslate - footerHeight;
         const absoluteTop = window.innerHeight - boundingRect.bottom;
 
-        this.updatePosition(this.footer, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop, absoluteTop, stopped);
+        const positionTypes = { isDefaultTop, isBorderTop };
+        const positions = { defaultTop, borderTop, fixedTop, absoluteTop };
+        this.updatePosition(this.footer, positionTypes, positions, stopped);
     }
 
-    updatePosition(element, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop, absoluteTop, stopped) {
+    updatePosition(element, positionTypes, positions, stopped) {
+        const { isDefaultTop, isBorderTop } = positionTypes;
+        const { defaultTop, borderTop, fixedTop, absoluteTop } = positions;
+
         if (isDefaultTop) {
             this.setPosition(element, 'absolute', defaultTop);
             return;
