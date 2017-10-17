@@ -110,6 +110,8 @@ export default class TableVisualization extends Component {
         this.scrolled = this.scrolled.bind(this);
 
         this.stopped = debounce(() => this.scroll(true), DEBOUNCE_SCROLL_STOP);
+
+        this.calculateMeasureDimensions();
     }
 
     componentDidMount() {
@@ -169,6 +171,8 @@ export default class TableVisualization extends Component {
             this.checkTableDimensions();
         }
 
+        this.calculateMeasureDimensions();
+
         this.props.afterRender();
     }
 
@@ -188,12 +192,12 @@ export default class TableVisualization extends Component {
         this.subscribers = subscribeEvents(this.scrolled, scrollEvents);
     }
 
-    setPosition(element, position = 'absolute', y = 0, sticking = false) {
+    setPosition(element, position = 'absolute', top = 0, sticking = false) {
         const { style, classList } = element;
 
         classList[sticking ? 'add' : 'remove']('sticking');
         style.position = position;
-        style.top = `${Math.round(y)}px`;
+        style.top = `${Math.round(top)}px`;
     }
 
     getSortFunc(column, index) {
@@ -246,6 +250,15 @@ export default class TableVisualization extends Component {
             });
     }
 
+    calculateMeasureDimensions() {
+        const { aggregations, hasHiddenRows } = this.props;
+
+        const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
+        const hiddenRowsOffset = hasHiddenRows ? (0.5 * DEFAULT_ROW_HEIGHT) : 0;
+        const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
+
+        this.measureDimensions = { footerHeight, hiddenRowsOffset, headerOffset };
+    }
 
     unsetListeners() {
         if (this.subscribers && this.subscribers.length > 0) {
@@ -277,64 +290,69 @@ export default class TableVisualization extends Component {
     }
 
     scrollHeader(stopped = false) {
-        const { stickyHeader, sortInTooltip, hasHiddenRows, aggregations } = this.props;
+        const { stickyHeader, sortInTooltip } = this.props;
         const boundingRect = this.tableInnerContainer.getBoundingClientRect();
+
+        const isOutOfViewport = boundingRect.bottom < 0;
+        if (isOutOfViewport) {
+            return;
+        }
 
         if (!stopped && sortInTooltip && this.state.sortBubble.visible) {
             this.closeBubble();
         }
 
-        const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
-        const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
-        const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + footerHeight - hiddenRowsOffset;
+        const { footerHeight, hiddenRowsOffset, headerOffset } = this.measureDimensions;
 
-        const isDefaultTop = boundingRect.top >= stickyHeader || boundingRect.top < stickyHeader - boundingRect.height;
-        const isBorderTop = boundingRect.bottom >= stickyHeader && boundingRect.bottom < stickyHeader + headerOffset;
-        const borderTop = boundingRect.height - headerOffset;
+        const isDefaultPosition = boundingRect.top >= stickyHeader;
+        const defaultTop = 0;
+        const isEdgePosition =
+            boundingRect.bottom >= stickyHeader &&
+            boundingRect.bottom < stickyHeader + headerOffset + footerHeight + hiddenRowsOffset;
+        const borderTop = boundingRect.height - headerOffset - footerHeight - hiddenRowsOffset;
         const fixedTop = stickyHeader;
         const absoluteTop = stickyHeader - boundingRect.top;
 
-        const positionTypes = { isDefaultTop, isBorderTop };
-        const positions = { defaultTop: null, borderTop, fixedTop, absoluteTop };
-        this.updatePosition(this.header, positionTypes, positions, stopped);
+        const positionConditions = { isDefaultPosition, isEdgePosition };
+        const positions = { defaultTop, borderTop, fixedTop, absoluteTop };
+
+        this.updatePosition(this.header, positionConditions, positions, stopped);
     }
 
     scrollFooter(stopped = false) {
-        const { hasHiddenRows, aggregations } = this.props;
+        const boundingRect = this.tableInnerContainer.getBoundingClientRect();
 
-        if (!this.hasFooter()) {
+        const isOutOfViewport = boundingRect.top > window.innerHeight;
+        if (isOutOfViewport || !this.hasFooter()) {
             return;
         }
 
-        const boundingRect = this.tableInnerContainer.getBoundingClientRect();
+        const { footerHeight, hiddenRowsOffset, headerOffset } = this.measureDimensions;
 
-        const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
-        const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
-        const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
         const footerHeightTranslate = boundingRect.height - footerHeight;
 
-        const isDefaultTop = boundingRect.bottom + hiddenRowsOffset <= window.innerHeight;
-        const defaultTop = hiddenRowsOffset;
-        const isBorderTop = (boundingRect.bottom - footerHeightTranslate + headerOffset) >= window.innerHeight;
+        const isDefaultPosition = boundingRect.bottom - hiddenRowsOffset <= window.innerHeight;
+        const defaultTop = 0 - hiddenRowsOffset;
+        const isEdgePosition = boundingRect.bottom + headerOffset >= window.innerHeight + footerHeightTranslate;
         const borderTop = headerOffset - footerHeightTranslate;
         const fixedTop = window.innerHeight - footerHeightTranslate - footerHeight;
         const absoluteTop = window.innerHeight - boundingRect.bottom;
 
-        const positionTypes = { isDefaultTop, isBorderTop };
+        const positionConditions = { isDefaultPosition, isEdgePosition };
         const positions = { defaultTop, borderTop, fixedTop, absoluteTop };
-        this.updatePosition(this.footer, positionTypes, positions, stopped);
+        this.updatePosition(this.footer, positionConditions, positions, stopped);
     }
 
-    updatePosition(element, positionTypes, positions, stopped) {
-        const { isDefaultTop, isBorderTop } = positionTypes;
+    updatePosition(element, positionConditions, positions, stopped) {
+        const { isDefaultPosition, isEdgePosition } = positionConditions;
         const { defaultTop, borderTop, fixedTop, absoluteTop } = positions;
 
-        if (isDefaultTop) {
+        if (isDefaultPosition) {
             this.setPosition(element, 'absolute', defaultTop);
             return;
         }
 
-        if (isBorderTop) {
+        if (isEdgePosition) {
             this.setPosition(element, 'absolute', borderTop, true);
             return;
         }
