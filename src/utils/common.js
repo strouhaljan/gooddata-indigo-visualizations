@@ -1,4 +1,5 @@
 import { isArray, has } from 'lodash';
+import { Observable } from 'rxjs/Rx';
 
 export function parseValue(value) {
     const parsedValue = parseFloat(value);
@@ -41,3 +42,18 @@ export const getAttributeHeader = header => ({
     identifier: header.id,
     uri: header.uri
 });
+
+export function subscribeEvents(func, events) {
+    return events.map((event) => {
+        if (event.debounce > 0) {
+            return Observable
+                .fromEvent(window, event.name)
+                .debounceTime(event.debounce)
+                .subscribe(func);
+        }
+
+        return Observable
+            .fromEvent(window, event.name)
+            .subscribe(func);
+    });
+}

@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { Table, Column, Cell } from 'fixed-data-table-2';
 import classNames from 'classnames';
-import { noop, partial, uniqueId, pick, assign, isEqual } from 'lodash';
-import { Observable } from 'rxjs/Rx';
+import { noop, partial, uniqueId, assign, isEqual } from 'lodash';
 import { numberFormat } from '@gooddata/numberjs';
 
 import Bubble from '@gooddata/goodstrap/lib/Bubble/Bubble';
 import BubbleHoverTrigger from '@gooddata/goodstrap/lib/Bubble/BubbleHoverTrigger';
 import TableSortBubbleContent from './TableSortBubbleContent';
+import { subscribeEvents } from '../utils/common';
 import { cellClick, isDrillable } from '../utils/drilldownEventing';
 import DrillableItem from '../proptypes/DrillableItem';
 
@@ -51,21 +51,6 @@ const scrollEvents = [
         debounce: RESIZE_DEBOUNCE_MILISECONDS
     }
 ];
-
-function subscribeEvents(func, events) {
-    return events.map((event) => {
-        if (event.debounce > 0) {
-            return Observable
-                .fromEvent(window, event.name)
-                .debounceTime(event.debounce)
-                .subscribe(func);
-        }
-
-        return Observable
-            .fromEvent(window, event.name)
-            .subscribe(func);
-    });
-}
 
 export default class TableVisualization extends Component {
     static propTypes = {
