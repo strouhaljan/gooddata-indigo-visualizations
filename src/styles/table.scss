@@ -65,7 +65,7 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
         }
     
         .table-footer {
-            border-top: 1px solid $aggregations-border-top;
+            border-top: 1px solid $footer-border-top;
 
             &.sticking {
                 box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.15);
@@ -233,7 +233,7 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
                     padding-right: 0;
                 }
 
-                .indigo-table-aggregations-cell {
+                .indigo-table-footer-cell {
                     padding-right: 20px;
                 }
             }
@@ -242,8 +242,8 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
                 padding: 0;
             }
 
-            .indigo-table-aggregations-cell {
-                border-bottom: 1px solid $aggregations-border;
+            .indigo-table-footer-cell {
+                border-bottom: 1px solid $footer-border;
                 box-sizing: border-box;
                 line-height: 30px;
                 padding: 0 8px;

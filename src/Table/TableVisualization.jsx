@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { Table, Column, Cell } from 'fixed-data-table-2';
 import classNames from 'classnames';
-import { noop, partial, uniqueId, debounce, pick, assign } from 'lodash';
+import { noop, partial, uniqueId, pick, assign } from 'lodash';
 import { Observable } from 'rxjs/Rx';
 import { numberFormat } from '@gooddata/numberjs';
 
@@ -141,7 +141,7 @@ export default class TableVisualization extends Component {
         if (this.isSticky(stickyHeader)) {
             this.setListeners();
             this.scrolled();
-            this.checkTableDimensions();
+            // this.checkTableDimensions();
         }
     }
 
@@ -164,16 +164,19 @@ export default class TableVisualization extends Component {
         const { stickyHeader, aggregations } = this.props;
 
         if (this.isSticky(stickyHeader)) {
-            this.scrollHeader(true);
-            this.scrollFooter(true);
-            this.checkTableDimensions();
+            this.scrolled();
+            // this.checkTableDimensions();
         }
 
         if (prevProps.aggregations !== aggregations) {
             const tableRows = this.table.querySelectorAll('.fixedDataTableRowLayout_rowWrapper');
+
             this.footer.classList.remove('table-footer');
-            this.footer = tableRows[tableRows.length - 1];
-            this.footer.classList.add('table-footer');
+
+            if (aggregations.length > 0) {
+                this.footer = tableRows[tableRows.length - 1];
+                this.footer.classList.add('table-footer');
+            }
         }
 
         this.props.afterRender();
@@ -195,10 +198,10 @@ export default class TableVisualization extends Component {
         this.subscribers = subscribeEvents(this.scrolled, scrollEvents);
     }
 
-    setHeading(element, position = '', y = 0) {
+    setPosition(element, position = 'absolute', y = 0, sticking = false) {
         const { style, classList } = element;
 
-        classList[position ? 'add' : 'remove']('sticking');
+        classList[sticking ? 'add' : 'remove']('sticking');
         style.position = position;
         style.top = `${Math.round(y)}px`;
     }
@@ -256,46 +259,14 @@ export default class TableVisualization extends Component {
         return stickyHeader >= 0;
     }
 
-    checkTableDimensions() {
-        if (this.table) {
-            const { width, height } = this.state;
-            const rect = this.table.getBoundingClientRect();
+    // checkTableDimensions() {
+    //     if (this.table) {
+    //         const { width, height } = this.state;
+    //         const rect = this.table.getBoundingClientRect();
 
-            if (width !== rect.width || height !== rect.height) {
-                this.setState(pick(rect, 'width', 'height'));
-            }
-        }
-    }
-
-    // scrollHeader() {
-    //     const { stickyHeader, sortInTooltip, hasHiddenRows, aggregations } = this.props;
-    //     const boundingRect = this.tableInnerContainer.getBoundingClientRect();
-
-    //     if (sortInTooltip && this.state.sortBubble.visible) {
-    //         this.closeBubble();
-    //     }
-
-    //     if (
-    //         boundingRect.top >= stickyHeader ||
-    //         boundingRect.top < stickyHeader - boundingRect.height
-    //     ) {
-    //         this.setHeading(this.header);
-    //         return;
-    //     }
-
-    //     const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
-    //     const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT) + (aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT) - hiddenRowsOffset;
-
-    //     if (
-    //         boundingRect.bottom >= stickyHeader &&
-    //         boundingRect.bottom < stickyHeader + headerOffset
-    //     ) {
-    //         this.setHeading(this.header, 'absolute', boundingRect.height - headerOffset);
-    //         return;
-    //     }
-
-    //     if (this.footer.style.position !== 'fixed') {
-    //         this.setHeading(this.header, 'fixed', stickyHeader);
+    //         if (width !== rect.width || height !== rect.height) {
+    //             this.setState(pick(rect, 'width', 'height'));
+    //         }
     //     }
     // }
 
@@ -318,37 +289,6 @@ export default class TableVisualization extends Component {
         this.scroll(this.header, isDefaultTop, null, isBorderTop, borderTop, fixedTop);
     }
 
-    // scrollFooter() {
-    //     const { hasHiddenRows, aggregations } = this.props;
-
-    //     if (aggregations.length === 0) {
-    //         return;
-    //     }
-
-    //     const boundingRect = this.tableInnerContainer.getBoundingClientRect();
-    //     const hiddenRowsOffset = hasHiddenRows ? 0 - (0.5 * DEFAULT_ROW_HEIGHT) : 0;
-
-    //     if (boundingRect.bottom + hiddenRowsOffset <= window.innerHeight) {
-    //         this.setHeading(this.footer, null, hiddenRowsOffset);
-    //         return;
-    //     }
-
-    //     const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
-
-    //     const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
-
-    //     const footerHeightTranslate = boundingRect.height - footerHeight;
-
-    //     if ((boundingRect.bottom - footerHeightTranslate + headerOffset) >= window.innerHeight) {
-    //         this.setHeading(this.footer, 'absolute', headerOffset - footerHeightTranslate);
-    //         return;
-    //     }
-
-    //     if (this.footer.style.position !== 'fixed') {
-    //         this.setHeading(this.footer, 'fixed', window.innerHeight - footerHeightTranslate - footerHeight);
-    //     }
-    // }
-
     scrollFooter() {
         const { hasHiddenRows, aggregations } = this.props;
 
@@ -362,7 +302,6 @@ export default class TableVisualization extends Component {
         const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
         const footerHeightTranslate = boundingRect.height - footerHeight;
 
-
         const isDefaultTop = boundingRect.bottom + hiddenRowsOffset <= window.innerHeight;
         const defaultTop = hiddenRowsOffset;
         const isBorderTop = (boundingRect.bottom - footerHeightTranslate + headerOffset) >= window.innerHeight;
@@ -374,16 +313,16 @@ export default class TableVisualization extends Component {
 
     scroll(element, isDefaultTop, defaultTop, isBorderTop, borderTop, fixedTop) {
         if (isDefaultTop) {
-            this.setHeading(element, 'absolute', defaultTop);
+            this.setPosition(element, 'absolute', defaultTop);
             return;
         }
 
         if (isBorderTop) {
-            this.setHeading(element, 'absolute', borderTop);
+            this.setPosition(element, 'absolute', borderTop, true);
             return;
         }
 
-        this.setHeading(element, 'fixed', fixedTop);
+        this.setPosition(element, 'fixed', fixedTop, true);
     }
 
     scrolled() {
@@ -558,7 +497,7 @@ export default class TableVisualization extends Component {
         };
     }
 
-    renderAggregations(column, index) {
+    renderFooter(column, index) {
         const { aggregations } = this.props;
 
         const style = {
@@ -571,7 +510,7 @@ export default class TableVisualization extends Component {
                 {aggregations.map((aggregation) => {
                     const value = aggregation.values[index] === null ? '' : aggregation.values[index];
                     return (
-                        <div className={'indigo-table-aggregations-cell'} style={style}>
+                        <div className={'indigo-table-footer-cell'} style={style}>
                             <span>{isFirstColumn ? aggregation.name : numberFormat(value, column.format)}</span>
                         </div>
                     );
@@ -592,7 +531,7 @@ export default class TableVisualization extends Component {
                     align={getColumnAlign(column)}
                     columnKey={index}
                     header={renderHeader(column, index, columnWidth)}
-                    footer={this.renderAggregations(column, index)}
+                    footer={this.renderFooter(column, index)}
                     cell={this.renderCell(columns, index)}
                     allowCellsRecycling
                 />
@@ -617,10 +556,6 @@ export default class TableVisualization extends Component {
         const footerHeight = DEFAULT_FOOTER_ROW_HEIGHT * aggregations.length;
         const height = containerMaxHeight ? undefined : containerHeight;
         const maxHeight = containerMaxHeight ? (containerMaxHeight + footerHeight) : undefined;
-
-        console.log('XXX render()', containerHeight, containerMaxHeight, footerHeight);
-        console.log('XXX height, maxHeight', height, maxHeight);
-        console.log('XXX state', this.state.height);
 
         return (
             <div className={this.getComponentClasses()}>
