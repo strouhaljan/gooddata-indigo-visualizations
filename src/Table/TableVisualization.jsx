@@ -110,8 +110,6 @@ export default class TableVisualization extends Component {
         this.scrolled = this.scrolled.bind(this);
 
         this.stopped = debounce(() => this.scroll(true), DEBOUNCE_SCROLL_STOP);
-
-        this.calculateMeasureDimensions();
     }
 
     componentDidMount() {
@@ -170,8 +168,6 @@ export default class TableVisualization extends Component {
             this.scroll(true);
             this.checkTableDimensions();
         }
-
-        this.calculateMeasureDimensions();
 
         this.props.afterRender();
     }
@@ -250,14 +246,14 @@ export default class TableVisualization extends Component {
             });
     }
 
-    calculateMeasureDimensions() {
+    getCalculationDimensions() {
         const { aggregations, hasHiddenRows } = this.props;
 
         const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
         const hiddenRowsOffset = hasHiddenRows ? (0.5 * DEFAULT_ROW_HEIGHT) : 0;
         const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
 
-        this.measureDimensions = { footerHeight, hiddenRowsOffset, headerOffset };
+        return { footerHeight, hiddenRowsOffset, headerOffset };
     }
 
     unsetListeners() {
@@ -302,7 +298,7 @@ export default class TableVisualization extends Component {
             this.closeBubble();
         }
 
-        const { footerHeight, hiddenRowsOffset, headerOffset } = this.measureDimensions;
+        const { footerHeight, hiddenRowsOffset, headerOffset } = this.getCalculationDimensions();
 
         const isDefaultPosition = boundingRect.top >= stickyHeader;
         const defaultTop = 0;
@@ -327,7 +323,7 @@ export default class TableVisualization extends Component {
             return;
         }
 
-        const { footerHeight, hiddenRowsOffset, headerOffset } = this.measureDimensions;
+        const { footerHeight, hiddenRowsOffset, headerOffset } = this.getCalculationDimensions();
 
         const footerHeightTranslate = boundingRect.height - footerHeight;
 
