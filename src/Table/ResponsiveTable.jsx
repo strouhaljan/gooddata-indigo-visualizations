@@ -20,6 +20,18 @@ export default class ResponsiveTable extends Component {
     };
 
     static defaultProps = {
+        aggregations: [
+            {
+                name: 'Sum',
+                values: [null, null, 125, null, 256, 815, 99, 9876983, null, 9845]
+            }, {
+                name: 'Avg',
+                values: [null, null, 45.98, 12.32, null, 12, 113, 231, 45, 112.32]
+            }, {
+                name: 'Rollup',
+                values: [null, 12.99, null, 1.28, 98.1, 1.008, 2, 2.098765, 0.1, 10.0987]
+            }
+        ],
         onMore: noop,
         onLess: noop,
         page: 1
