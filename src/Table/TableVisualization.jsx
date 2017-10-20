@@ -602,7 +602,7 @@ export default class TableVisualization extends Component {
 
         const footerHeight = DEFAULT_FOOTER_ROW_HEIGHT * aggregations.length;
         const height = containerMaxHeight ? undefined : containerHeight;
-        const maxHeight = containerMaxHeight ? (containerMaxHeight + footerHeight) : undefined;
+
 
         return (
             <div className={this.getComponentClasses()}>
@@ -615,7 +615,7 @@ export default class TableVisualization extends Component {
                         rowHeight={DEFAULT_ROW_HEIGHT}
                         rowsCount={this.props.rows.length}
                         width={containerWidth}
-                        maxHeight={maxHeight}
+                        maxHeight={containerMaxHeight}
                         height={height}
                         onScrollStart={this.closeBubble}
                     >

@@ -23,6 +23,7 @@ export default class TableTransformation extends Component {
         onFiredDrillEvent: PropTypes.func,
         tableRenderer: PropTypes.func.isRequired,
         height: PropTypes.number,
+        maxHeight: PropTypes.number,
         width: PropTypes.number,
         onSortChange: PropTypes.func,
         afterRender: PropTypes.func
@@ -38,6 +39,7 @@ export default class TableTransformation extends Component {
         afterRender: () => {},
         onSortChange: () => {},
         height: undefined,
+        maxHeight: undefined,
         width: undefined
     };
 
@@ -46,6 +48,7 @@ export default class TableTransformation extends Component {
             data: { headers, rawData },
             config,
             height,
+            maxHeight,
             width,
             onSortChange,
             afm,
@@ -73,6 +76,10 @@ export default class TableTransformation extends Component {
 
         if (height) {
             tableProps.containerHeight = height;
+        }
+
+        if (maxHeight) {
+            tableProps.containerMaxHeight = maxHeight;
         }
 
         if (width) {
