@@ -64,7 +64,9 @@ $gdc-goodstrap-basepath: '~@gooddata/goodstrap/lib/';
 
         .table-footer {
             // stylelint-disable-next-line declaration-no-important
-            z-index: 2 !important; // override inline styles added by fixed-data-table
+            z-index: 2 !important; // Override inline style added by fixed-data-table-2
+            margin-top: -1px;
+            padding-bottom: 1px;
             border-top: 1px solid $footer-border-top;
 
             &.sticking {
