@@ -32,10 +32,10 @@ function generateData(columns, rows) {
 }
 
 function generateAggregations(columns, aggregationsTypes) {
-    return aggregationsTypes.map((type) => {
+    return aggregationsTypes.map((type, typeIndex) => {
         return {
             name: type,
-            values: range(columns).map(() => (Math.random() * (1000 - 10)) + 10)
+            values: range(columns).map((column, columnIndex) => typeIndex + columnIndex)
         };
     });
 }
