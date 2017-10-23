@@ -20,6 +20,7 @@ export default class ResponsiveTable extends Component {
     };
 
     static defaultProps = {
+        aggregations: [],
         onMore: noop,
         onLess: noop,
         page: 1
