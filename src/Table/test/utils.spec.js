@@ -341,85 +341,46 @@ describe('Utils', () => {
 
     describe('getHeaderPositions', () => {
         it('should return proper header positions', () => {
-            let stickyHeader = 0;
+            const stickyHeader = 0;
             let hasHiddenRows = true;
             let aggregations = [];
             let tableHeight = 500;
             let tableTop = 50;
 
-            let expected = {
-                defaultTop: 0,
-                edgeTop: 414,
-                fixedTop: 0,
-                absoluteTop: -50
-            };
-
             expect(getHeaderPositions(stickyHeader, hasHiddenRows, aggregations, tableHeight, tableTop))
-                .toEqual(expected);
+                .toMatchSnapshot();
 
-            stickyHeader = 0;
             hasHiddenRows = true;
             aggregations = [1, 2, 3];
             tableHeight = 500;
             tableTop = 50;
 
-            expected = {
-                defaultTop: 0,
-                edgeTop: 324,
-                fixedTop: 0,
-                absoluteTop: -50
-            };
-
             expect(getHeaderPositions(stickyHeader, hasHiddenRows, aggregations, tableHeight, tableTop))
-                .toEqual(expected);
+                .toMatchSnapshot();
 
-            stickyHeader = 0;
             hasHiddenRows = false;
             aggregations = [1, 2, 3];
             tableHeight = 500;
             tableTop = 50;
 
-            expected = {
-                defaultTop: 0,
-                edgeTop: 354,
-                fixedTop: 0,
-                absoluteTop: -50
-            };
-
             expect(getHeaderPositions(stickyHeader, hasHiddenRows, aggregations, tableHeight, tableTop))
-                .toEqual(expected);
+                .toMatchSnapshot();
 
-            stickyHeader = 0;
             hasHiddenRows = true;
             aggregations = [];
             tableHeight = 200;
             tableTop = 100;
 
-            expected = {
-                defaultTop: 0,
-                edgeTop: 114,
-                fixedTop: 0,
-                absoluteTop: -100
-            };
-
             expect(getHeaderPositions(stickyHeader, hasHiddenRows, aggregations, tableHeight, tableTop))
-                .toEqual(expected);
+                .toMatchSnapshot();
 
-            stickyHeader = 0;
             hasHiddenRows = false;
             aggregations = [];
             tableHeight = 200;
             tableTop = 100;
 
-            expected = {
-                defaultTop: 0,
-                edgeTop: 144,
-                fixedTop: 0,
-                absoluteTop: -100
-            };
-
             expect(getHeaderPositions(stickyHeader, hasHiddenRows, aggregations, tableHeight, tableTop))
-                .toEqual(expected);
+                .toMatchSnapshot();
         });
     });
 
@@ -462,53 +423,29 @@ describe('Utils', () => {
 
     describe('getFooterPositions', () => {
         it('should return proper footer positions', () => {
+            const aggregations = [1, 2, 3];
             let hasHiddenRows = true;
-            let aggregations = [1, 2, 3];
             let tableHeight = 300;
             let tableBottom = 500;
             let windowHeight = 400;
 
-            let expected = {
-                defaultTop: -15,
-                edgeTop: -139,
-                fixedTop: 100,
-                absoluteTop: -100
-            };
-
             expect(getFooterPositions(hasHiddenRows, aggregations, tableHeight, tableBottom, windowHeight))
-                .toEqual(expected);
+                .toMatchSnapshot();
 
-            hasHiddenRows = true;
-            aggregations = [1, 2, 3];
             tableHeight = 500;
             tableBottom = 1000;
             windowHeight = 800;
 
-            expected = {
-                defaultTop: -15,
-                edgeTop: -339,
-                fixedTop: 300,
-                absoluteTop: -200
-            };
-
             expect(getFooterPositions(hasHiddenRows, aggregations, tableHeight, tableBottom, windowHeight))
-                .toEqual(expected);
+                .toMatchSnapshot();
 
             hasHiddenRows = false;
-            aggregations = [1, 2, 3];
             tableHeight = 300;
             tableBottom = 100;
             windowHeight = 500;
 
-            expected = {
-                defaultTop: 0,
-                edgeTop: -154,
-                fixedTop: 200,
-                absoluteTop: 400
-            };
-
             expect(getFooterPositions(hasHiddenRows, aggregations, tableHeight, tableBottom, windowHeight))
-                .toEqual(expected);
+                .toMatchSnapshot();
         });
     });
 });

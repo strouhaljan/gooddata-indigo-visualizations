@@ -1,0 +1,73 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Utils getFooterPositions should return proper footer positions 1`] = `
+Object {
+  "absoluteTop": -100,
+  "defaultTop": -15,
+  "edgeTop": -139,
+  "fixedTop": 100,
+}
+`;
+
+exports[`Utils getFooterPositions should return proper footer positions 2`] = `
+Object {
+  "absoluteTop": -200,
+  "defaultTop": -15,
+  "edgeTop": -339,
+  "fixedTop": 300,
+}
+`;
+
+exports[`Utils getFooterPositions should return proper footer positions 3`] = `
+Object {
+  "absoluteTop": 400,
+  "defaultTop": 0,
+  "edgeTop": -154,
+  "fixedTop": 200,
+}
+`;
+
+exports[`Utils getHeaderPositions should return proper header positions 1`] = `
+Object {
+  "absoluteTop": -50,
+  "defaultTop": 0,
+  "edgeTop": 414,
+  "fixedTop": 0,
+}
+`;
+
+exports[`Utils getHeaderPositions should return proper header positions 2`] = `
+Object {
+  "absoluteTop": -50,
+  "defaultTop": 0,
+  "edgeTop": 324,
+  "fixedTop": 0,
+}
+`;
+
+exports[`Utils getHeaderPositions should return proper header positions 3`] = `
+Object {
+  "absoluteTop": -50,
+  "defaultTop": 0,
+  "edgeTop": 354,
+  "fixedTop": 0,
+}
+`;
+
+exports[`Utils getHeaderPositions should return proper header positions 4`] = `
+Object {
+  "absoluteTop": -100,
+  "defaultTop": 0,
+  "edgeTop": 114,
+  "fixedTop": 0,
+}
+`;
+
+exports[`Utils getHeaderPositions should return proper header positions 5`] = `
+Object {
+  "absoluteTop": -100,
+  "defaultTop": 0,
+  "edgeTop": 144,
+  "fixedTop": 0,
+}
+`;
