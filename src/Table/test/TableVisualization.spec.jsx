@@ -24,8 +24,24 @@ const FIXTURE = {
             format: '[red]#,##0'
         }
     ],
+    onlyMetricHeaders: [
+        {
+            id: 'metric-1',
+            type: 'metric',
+            title: '# of Open Opps.',
+            format: '#,##0'
+        }, {
+            id: 'metric-2',
+            type: 'metric',
+            title: '# of Opportunities',
+            format: '[red]#,##0'
+        }
+    ],
     rawData: [
         [{ id: '1', name: 'Wile E. Coyote' }, '30', '1324']
+    ],
+    onlyMetricRawData: [
+        ['30', '1324']
     ],
     afm: {
         measures: [
@@ -200,6 +216,16 @@ describe('Table', () => {
     describe('table footer', () => {
         it('should not render any footer cells when no aggregations are provided', () => {
             const wrapper = renderTable();
+
+            expect(wrapper.find('.indigo-table-footer-cell').length).toEqual(0);
+        });
+
+        it('should not render any footer cells when aggregations are provided but data contains only metrics', () => {
+            const wrapper = renderTable({
+                aggregations: FIXTURE.aggregations,
+                headers: FIXTURE.onlyMetricHeaders,
+                rawData: FIXTURE.onlyMetricRawData
+            });
 
             expect(wrapper.find('.indigo-table-footer-cell').length).toEqual(0);
         });

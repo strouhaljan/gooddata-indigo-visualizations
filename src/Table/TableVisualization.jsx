@@ -293,8 +293,11 @@ export default class TableVisualization extends Component {
     }
 
     hasFooter() {
-        const { aggregations } = this.props;
-        return aggregations.length > 0;
+        const { aggregations, headers } = this.props;
+
+        const onlyMetrics = headers.every(column => column.type === 'metric');
+
+        return aggregations.length > 0 && !onlyMetrics;
     }
 
     checkTableDimensions() {
@@ -545,6 +548,8 @@ export default class TableVisualization extends Component {
     renderFooter(column, index) {
         const { aggregations } = this.props;
 
+        if (!this.hasFooter()) return null;
+
         const style = {
             height: DEFAULT_FOOTER_ROW_HEIGHT
         };
@@ -602,7 +607,6 @@ export default class TableVisualization extends Component {
 
         const footerHeight = DEFAULT_FOOTER_ROW_HEIGHT * aggregations.length;
         const height = containerMaxHeight ? undefined : containerHeight;
-
 
         return (
             <div className={this.getComponentClasses()}>
