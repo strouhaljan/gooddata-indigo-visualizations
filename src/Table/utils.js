@@ -9,6 +9,8 @@ import {
 
 import { parseValue, getMeasureHeader, getAttributeHeader } from '../utils/common';
 
+import { DEFAULT_ROW_HEIGHT, DEFAULT_HEADER_HEIGHT, DEFAULT_FOOTER_ROW_HEIGHT } from './TableVisualization';
+
 import { ASC, DESC } from './Sort';
 
 const HEADER_PADDING = 8;
@@ -220,3 +222,99 @@ export const enrichTableDataHeaders = (columns, afm) =>
         }
         return column;
     });
+
+export function setPosition(element, position = 'absolute', top = 0, sticking = false) {
+    const { style, classList } = element;
+
+    classList[sticking ? 'add' : 'remove']('sticking');
+    style.position = position;
+    style.top = `${Math.round(top)}px`;
+}
+
+export function updatePosition(element, isDefaultPosition, isEdgePosition, positions, stopped) {
+    const { defaultTop, edgeTop, fixedTop, absoluteTop } = positions;
+
+    if (isDefaultPosition) {
+        setPosition(element, 'absolute', defaultTop);
+        return;
+    }
+
+    if (isEdgePosition) {
+        setPosition(element, 'absolute', edgeTop, true);
+        return;
+    }
+
+    if (stopped) {
+        setPosition(element, 'absolute', absoluteTop, true);
+    } else {
+        setPosition(element, 'fixed', fixedTop, true);
+    }
+}
+
+export function getFooterHeight(aggregations) {
+    return aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
+}
+
+export function getHiddenRowsOffset(hasHiddenRows) {
+    return hasHiddenRows ? (0.5 * DEFAULT_ROW_HEIGHT) : 0;
+}
+
+export function getHeaderOffset(hasHiddenRows) {
+    return DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
+}
+
+export function getIsHeaderAtDefaultPosition(stickyHeader, tableTop) {
+    return tableTop >= stickyHeader;
+}
+
+export function getIsHeaderAtEdgePosition(stickyHeader, hasHiddenRows, aggregations, tableBottom) {
+    const footerHeight = getFooterHeight(aggregations);
+    const hiddenRowsOffset = getHiddenRowsOffset(hasHiddenRows);
+    const headerOffset = getHeaderOffset(hasHiddenRows);
+
+    return tableBottom >= stickyHeader &&
+        tableBottom < stickyHeader + headerOffset + footerHeight + hiddenRowsOffset;
+}
+
+export function getHeaderPositions(stickyHeader, hasHiddenRows, aggregations, tableHeight, tableTop) {
+    const footerHeight = getFooterHeight(aggregations);
+    const hiddenRowsOffset = getHiddenRowsOffset(hasHiddenRows);
+    const headerOffset = getHeaderOffset(hasHiddenRows);
+
+    return {
+        defaultTop: 0,
+        edgeTop: tableHeight - headerOffset - footerHeight - hiddenRowsOffset,
+        fixedTop: stickyHeader,
+        absoluteTop: stickyHeader - tableTop
+    };
+}
+
+export function getIsFooterAtDefaultPosition(aggregations, hasHiddenRows, tableBottom, windowHeight) {
+    const hiddenRowsOffset = getHiddenRowsOffset(hasHiddenRows);
+
+    return tableBottom - hiddenRowsOffset <= windowHeight;
+}
+
+export function getIsFooterAtEdgePosition(hasHiddenRows, aggregations, tableHeight, tableBottom, windowHeight) {
+    const footerHeight = getFooterHeight(aggregations);
+    const headerOffset = getHeaderOffset(hasHiddenRows);
+
+    const footerHeightTranslate = tableHeight - footerHeight;
+
+    return tableBottom + headerOffset >= windowHeight + footerHeightTranslate;
+}
+
+export function getFooterPositions(hasHiddenRows, aggregations, tableHeight, tableBottom, windowHeight) {
+    const footerHeight = getFooterHeight(aggregations);
+    const hiddenRowsOffset = getHiddenRowsOffset(hasHiddenRows);
+    const headerOffset = getHeaderOffset(hasHiddenRows);
+
+    const footerHeightTranslate = tableHeight - footerHeight;
+
+    return {
+        defaultTop: 0 - hiddenRowsOffset,
+        edgeTop: headerOffset - footerHeightTranslate,
+        fixedTop: windowHeight - footerHeightTranslate - footerHeight,
+        absoluteTop: windowHeight - tableBottom
+    };
+}

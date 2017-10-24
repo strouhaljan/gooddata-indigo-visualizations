@@ -1,9 +1,8 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import { Table } from 'fixed-data-table-2';
-import { fill } from 'lodash';
 
-import TableVisualization, { updatePosition, getDimensionsForCalculation } from '../TableVisualization';
+import TableVisualization from '../TableVisualization';
 import { ASC, DESC } from '../Sort';
 import { withIntl } from '../../test/utils';
 
@@ -234,128 +233,6 @@ describe('Table', () => {
             const wrapper = renderTable({ aggregations: FIXTURE.aggregations });
 
             expect(wrapper.find('.indigo-table-footer-cell').length).toEqual(9);
-        });
-    });
-
-    describe('#updatePosition', () => {
-        const positions = {
-            defaultTop: 1,
-            edgeTop: 2,
-            fixedTop: 3,
-            absoluteTop: 4
-        };
-
-        let element;
-
-        beforeEach(() => {
-            element = document.createElement('div');
-        });
-
-        it('should set default position and proper class to given element', () => {
-            const positionConditions = {
-                isDefaultPosition: true,
-                isEdgePosition: false
-            };
-
-            updatePosition(element, positionConditions, positions);
-
-            expect(element.classList.contains('sticking')).toEqual(false);
-            expect(element.style.position).toEqual('absolute');
-            expect(element.style.top).toEqual(`${positions.defaultTop}px`);
-        });
-
-        it('should set edge position and proper class to given element', () => {
-            const positionConditions = {
-                isDefaultPosition: false,
-                isEdgePosition: true
-            };
-
-            updatePosition(element, positionConditions, positions);
-
-            expect(element.classList.contains('sticking')).toEqual(true);
-            expect(element.style.position).toEqual('absolute');
-            expect(element.style.top).toEqual(`${positions.edgeTop}px`);
-        });
-
-        it('should set fixed position and proper class to given element', () => {
-            const positionConditions = {
-                isDefaultPosition: false,
-                isEdgePosition: false
-            };
-
-            updatePosition(element, positionConditions, positions);
-
-            expect(element.classList.contains('sticking')).toEqual(true);
-            expect(element.style.position).toEqual('fixed');
-            expect(element.style.top).toEqual(`${positions.fixedTop}px`);
-        });
-
-        it('should set absolute position and proper class to given element', () => {
-            const positionConditions = {
-                isDefaultPosition: false,
-                isEdgePosition: false
-            };
-            const stopped = true;
-
-            updatePosition(element, positionConditions, positions, stopped);
-
-            expect(element.classList.contains('sticking')).toEqual(true);
-            expect(element.style.position).toEqual('absolute');
-            expect(element.style.top).toEqual(`${positions.absoluteTop}px`);
-        });
-    });
-
-    describe('#getDimensionsForCalculation', () => {
-        it('should return proper dimensions when no aggregations are given', () => {
-            const hasHiddenRows = true;
-            const aggregationsLength = 0;
-            const aggregations = fill(Array(aggregationsLength), true);
-            const dimensionsForCalculation = getDimensionsForCalculation(aggregations, hasHiddenRows);
-
-            expect(dimensionsForCalculation).toEqual({
-                footerHeight: 0,
-                hiddenRowsOffset: 15,
-                headerOffset: 71
-            });
-        });
-
-        it('should return proper dimensions when no aggregations are given and whole table is displayed', () => {
-            const hasHiddenRows = false;
-            const aggregationsLength = 0;
-            const aggregations = fill(Array(aggregationsLength), true);
-            const dimensionsForCalculation = getDimensionsForCalculation(aggregations, hasHiddenRows);
-
-            expect(dimensionsForCalculation).toEqual({
-                footerHeight: 0,
-                hiddenRowsOffset: 0,
-                headerOffset: 56
-            });
-        });
-
-        it('should return proper dimensions when 5 aggregations are given', () => {
-            const hasHiddenRows = true;
-            const aggregationsLength = 5;
-            const aggregations = fill(Array(aggregationsLength), true);
-            const dimensionsForCalculation = getDimensionsForCalculation(aggregations, hasHiddenRows);
-
-            expect(dimensionsForCalculation).toEqual({
-                footerHeight: 150,
-                hiddenRowsOffset: 15,
-                headerOffset: 71
-            });
-        });
-
-        it('should return proper dimensions when 5 aggregations are given and whole table is displayed', () => {
-            const hasHiddenRows = false;
-            const aggregationsLength = 5;
-            const aggregations = fill(Array(aggregationsLength), true);
-            const dimensionsForCalculation = getDimensionsForCalculation(aggregations, hasHiddenRows);
-
-            expect(dimensionsForCalculation).toEqual({
-                footerHeight: 150,
-                hiddenRowsOffset: 0,
-                headerOffset: 56
-            });
         });
     });
 });

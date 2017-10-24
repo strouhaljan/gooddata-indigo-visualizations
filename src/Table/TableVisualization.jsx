@@ -23,7 +23,14 @@ import {
     getTooltipSortAlignPoints,
     getTooltipAlignPoints,
     calculateArrowPositions,
-    enrichTableDataHeaders
+    enrichTableDataHeaders,
+    getIsHeaderAtDefaultPosition,
+    getIsHeaderAtEdgePosition,
+    getHeaderPositions,
+    getIsFooterAtDefaultPosition,
+    getIsFooterAtEdgePosition,
+    getFooterPositions,
+    updatePosition
 } from './utils';
 
 const MIN_COLUMN_WIDTH = 100;
@@ -37,43 +44,6 @@ const DEBOUNCE_SCROLL_STOP = 500;
 
 export const SCROLL_DEBOUNCE_MILISECONDS = 0;
 export const RESIZE_DEBOUNCE_MILISECONDS = 60;
-
-export function setPosition(element, position = 'absolute', top = 0, sticking = false) {
-    const { style, classList } = element;
-
-    classList[sticking ? 'add' : 'remove']('sticking');
-    style.position = position;
-    style.top = `${Math.round(top)}px`;
-}
-
-export function updatePosition(element, positionConditions, positions, stopped) {
-    const { isDefaultPosition, isEdgePosition } = positionConditions;
-    const { defaultTop, edgeTop, fixedTop, absoluteTop } = positions;
-
-    if (isDefaultPosition) {
-        setPosition(element, 'absolute', defaultTop);
-        return;
-    }
-
-    if (isEdgePosition) {
-        setPosition(element, 'absolute', edgeTop, true);
-        return;
-    }
-
-    if (stopped) {
-        setPosition(element, 'absolute', absoluteTop, true);
-    } else {
-        setPosition(element, 'fixed', fixedTop, true);
-    }
-}
-
-export function getDimensionsForCalculation(aggregations, hasHiddenRows) {
-    const footerHeight = aggregations.length * DEFAULT_FOOTER_ROW_HEIGHT;
-    const hiddenRowsOffset = hasHiddenRows ? (0.5 * DEFAULT_ROW_HEIGHT) : 0;
-    const headerOffset = DEFAULT_HEADER_HEIGHT + ((hasHiddenRows ? 1.5 : 1) * DEFAULT_ROW_HEIGHT);
-
-    return { footerHeight, hiddenRowsOffset, headerOffset };
-}
 
 const scrollEvents = [
     {
@@ -313,9 +283,9 @@ export default class TableVisualization extends Component {
 
     scrollHeader(stopped = false) {
         const { stickyHeader, sortInTooltip, aggregations, hasHiddenRows } = this.props;
-        const boundingRect = this.tableInnerContainer.getBoundingClientRect();
+        const tableBoundingRect = this.tableInnerContainer.getBoundingClientRect();
 
-        const isOutOfViewport = boundingRect.bottom < 0;
+        const isOutOfViewport = tableBoundingRect.bottom < 0;
         if (isOutOfViewport) {
             return;
         }
@@ -323,48 +293,75 @@ export default class TableVisualization extends Component {
         if (!stopped && sortInTooltip && this.state.sortBubble.visible) {
             this.closeBubble();
         }
-        const { footerHeight, hiddenRowsOffset, headerOffset } =
-            getDimensionsForCalculation(aggregations, hasHiddenRows);
 
-        const isDefaultPosition = boundingRect.top >= stickyHeader;
-        const defaultTop = 0;
-        const isEdgePosition =
-            boundingRect.bottom >= stickyHeader &&
-            boundingRect.bottom < stickyHeader + headerOffset + footerHeight + hiddenRowsOffset;
-        const edgeTop = boundingRect.height - headerOffset - footerHeight - hiddenRowsOffset;
-        const fixedTop = stickyHeader;
-        const absoluteTop = stickyHeader - boundingRect.top;
+        const isDefaultPosition = getIsHeaderAtDefaultPosition(
+            stickyHeader,
+            tableBoundingRect.top
+        );
 
-        const positionConditions = { isDefaultPosition, isEdgePosition };
-        const positions = { defaultTop, edgeTop, fixedTop, absoluteTop };
+        const isEdgePosition = getIsHeaderAtEdgePosition(
+            stickyHeader,
+            hasHiddenRows,
+            aggregations,
+            tableBoundingRect.bottom
+        );
 
-        updatePosition(this.header, positionConditions, positions, stopped);
+        const positions = getHeaderPositions(
+            stickyHeader,
+            hasHiddenRows,
+            aggregations,
+            tableBoundingRect.height,
+            tableBoundingRect.top
+        );
+
+        updatePosition(
+            this.header,
+            isDefaultPosition,
+            isEdgePosition,
+            positions,
+            stopped
+        );
     }
 
     scrollFooter(stopped = false) {
         const { aggregations, hasHiddenRows } = this.props;
-        const boundingRect = this.tableInnerContainer.getBoundingClientRect();
+        const tableBoundingRect = this.tableInnerContainer.getBoundingClientRect();
 
-        const isOutOfViewport = boundingRect.top > window.innerHeight;
+        const isOutOfViewport = tableBoundingRect.top > window.innerHeight;
         if (isOutOfViewport || !this.hasFooter()) {
             return;
         }
 
-        const { footerHeight, hiddenRowsOffset, headerOffset } =
-            getDimensionsForCalculation(aggregations, hasHiddenRows);
+        const isDefaultPosition = getIsFooterAtDefaultPosition(
+            aggregations,
+            hasHiddenRows,
+            tableBoundingRect.bottom,
+            window.innerHeight
+        );
 
-        const footerHeightTranslate = boundingRect.height - footerHeight;
+        const isEdgePosition = getIsFooterAtEdgePosition(
+            hasHiddenRows,
+            aggregations,
+            tableBoundingRect.height,
+            tableBoundingRect.bottom,
+            window.innerHeight
+        );
 
-        const isDefaultPosition = boundingRect.bottom - hiddenRowsOffset <= window.innerHeight;
-        const defaultTop = 0 - hiddenRowsOffset;
-        const isEdgePosition = boundingRect.bottom + headerOffset >= window.innerHeight + footerHeightTranslate;
-        const edgeTop = headerOffset - footerHeightTranslate;
-        const fixedTop = window.innerHeight - footerHeightTranslate - footerHeight;
-        const absoluteTop = window.innerHeight - boundingRect.bottom;
+        const positions = getFooterPositions(
+            hasHiddenRows,
+            aggregations,
+            tableBoundingRect.height,
+            tableBoundingRect.bottom,
+            window.innerHeight
+        );
 
-        const positionConditions = { isDefaultPosition, isEdgePosition };
-        const positions = { defaultTop, edgeTop, fixedTop, absoluteTop };
-        updatePosition(this.footer, positionConditions, positions, stopped);
+        updatePosition(
+            this.footer,
+            isDefaultPosition,
+            isEdgePosition,
+            positions,
+            stopped
+        );
     }
 
     scroll(stopped = false) {
