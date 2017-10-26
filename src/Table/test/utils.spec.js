@@ -6,11 +6,11 @@ import {
     getFooterHeight,
     getHiddenRowsOffset,
     getHeaderOffset,
-    getIsHeaderAtDefaultPosition,
-    getIsHeaderAtEdgePosition,
+    isHeaderAtDefaultPosition,
+    isHeaderAtEdgePosition,
     getHeaderPositions,
-    getIsFooterAtDefaultPosition,
-    getIsFooterAtEdgePosition,
+    isFooterAtDefaultPosition,
+    isFooterAtEdgePosition,
     getFooterPositions,
     getHeaderSortClassName
 } from '../utils';
@@ -309,33 +309,33 @@ describe('Utils', () => {
         });
     });
 
-    describe('getIsHeaderAtDefaultPosition', () => {
+    describe('isHeaderAtDefaultPosition', () => {
         it('should return true if header is at its default position', () => {
             const stickyHeader = 0;
             const tableTop = 10;
-            expect(getIsHeaderAtDefaultPosition(stickyHeader, tableTop)).toEqual(true);
+            expect(isHeaderAtDefaultPosition(stickyHeader, tableTop)).toEqual(true);
         });
 
         it('should return false if header is not at its default position', () => {
             const stickyHeader = 0;
             const tableTop = -10;
-            expect(getIsHeaderAtDefaultPosition(stickyHeader, tableTop)).toEqual(false);
+            expect(isHeaderAtDefaultPosition(stickyHeader, tableTop)).toEqual(false);
         });
     });
 
-    describe('getIsHeaderAtEdgePosition', () => {
+    describe('isHeaderAtEdgePosition', () => {
         const stickyHeader = 0;
         const hasHiddenRows = true;
         const aggregations = [];
 
         it('should return true if header is at its edge position', () => {
             const tableBottom = 50;
-            expect(getIsHeaderAtEdgePosition(stickyHeader, hasHiddenRows, aggregations, tableBottom)).toEqual(true);
+            expect(isHeaderAtEdgePosition(stickyHeader, hasHiddenRows, aggregations, tableBottom)).toEqual(true);
         });
 
         it('should return false if header is not at its edge position', () => {
             const tableBottom = 500;
-            expect(getIsHeaderAtEdgePosition(stickyHeader, hasHiddenRows, aggregations, tableBottom)).toEqual(false);
+            expect(isHeaderAtEdgePosition(stickyHeader, hasHiddenRows, aggregations, tableBottom)).toEqual(false);
         });
     });
 
@@ -384,25 +384,25 @@ describe('Utils', () => {
         });
     });
 
-    describe('getIsFooterAtDefaultPosition', () => {
+    describe('isFooterAtDefaultPosition', () => {
         const aggregations = [1, 2, 3];
         const hasHiddenRows = false;
         const windowHeight = 500;
 
         it('should return true if footer is at its default position', () => {
             const tableBottom = 100;
-            expect(getIsFooterAtDefaultPosition(aggregations, hasHiddenRows, tableBottom, windowHeight))
+            expect(isFooterAtDefaultPosition(aggregations, hasHiddenRows, tableBottom, windowHeight))
                 .toEqual(true);
         });
 
         it('should return false if footer is not at its default position', () => {
             const tableBottom = 600;
-            expect(getIsFooterAtDefaultPosition(aggregations, hasHiddenRows, tableBottom, windowHeight))
+            expect(isFooterAtDefaultPosition(aggregations, hasHiddenRows, tableBottom, windowHeight))
                 .toEqual(false);
         });
     });
 
-    describe('getIsFooterAtEdgePosition', () => {
+    describe('isFooterAtEdgePosition', () => {
         const aggregations = [1, 2, 3];
         const hasHiddenRows = false;
         const tableHeight = 500;
@@ -410,13 +410,13 @@ describe('Utils', () => {
 
         it('should return true if footer is at its edge position', () => {
             const tableBottom = 1000;
-            expect(getIsFooterAtEdgePosition(hasHiddenRows, aggregations, tableHeight, tableBottom, windowHeight))
+            expect(isFooterAtEdgePosition(hasHiddenRows, aggregations, tableHeight, tableBottom, windowHeight))
                 .toEqual(true);
         });
 
         it('should return false if footer is not at its edge position', () => {
             const tableBottom = 100;
-            expect(getIsFooterAtEdgePosition(hasHiddenRows, aggregations, tableHeight, tableBottom, windowHeight))
+            expect(isFooterAtEdgePosition(hasHiddenRows, aggregations, tableHeight, tableBottom, windowHeight))
                 .toEqual(false);
         });
     });

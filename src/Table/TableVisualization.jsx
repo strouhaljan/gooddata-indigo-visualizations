@@ -24,11 +24,11 @@ import {
     getTooltipAlignPoints,
     calculateArrowPositions,
     enrichTableDataHeaders,
-    getIsHeaderAtDefaultPosition,
-    getIsHeaderAtEdgePosition,
+    isHeaderAtDefaultPosition,
+    isHeaderAtEdgePosition,
     getHeaderPositions,
-    getIsFooterAtDefaultPosition,
-    getIsFooterAtEdgePosition,
+    isFooterAtDefaultPosition,
+    isFooterAtEdgePosition,
     getFooterPositions,
     updatePosition
 } from './utils';
@@ -294,12 +294,12 @@ export default class TableVisualization extends Component {
             this.closeBubble();
         }
 
-        const isDefaultPosition = getIsHeaderAtDefaultPosition(
+        const isDefaultPosition = isHeaderAtDefaultPosition(
             stickyHeader,
             tableBoundingRect.top
         );
 
-        const isEdgePosition = getIsHeaderAtEdgePosition(
+        const isEdgePosition = isHeaderAtEdgePosition(
             stickyHeader,
             hasHiddenRows,
             aggregations,
@@ -332,14 +332,14 @@ export default class TableVisualization extends Component {
             return;
         }
 
-        const isDefaultPosition = getIsFooterAtDefaultPosition(
+        const isDefaultPosition = isFooterAtDefaultPosition(
             aggregations,
             hasHiddenRows,
             tableBoundingRect.bottom,
             window.innerHeight
         );
 
-        const isEdgePosition = getIsFooterAtEdgePosition(
+        const isEdgePosition = isFooterAtEdgePosition(
             hasHiddenRows,
             aggregations,
             tableBoundingRect.height,
